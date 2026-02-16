@@ -13,6 +13,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import type { SubscriptionTier } from "@/lib/subscription";
+import { trackSubscriptionStarted } from "@/lib/analytics";
 
 interface PlanFeature {
   text: string;
@@ -88,6 +89,7 @@ function SubscriptionContent() {
   const handleUpgrade = async (tier: "pro" | "lifetime") => {
     setUpgrading(tier);
     setError(null);
+    trackSubscriptionStarted(tier);
     try {
       const res = await fetch("/api/stripe/subscribe", {
         method: "POST",

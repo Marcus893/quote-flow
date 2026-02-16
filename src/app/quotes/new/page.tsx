@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { getTierLimits } from "@/lib/subscription";
+import { trackQuoteCreated, trackQuoteSent } from "@/lib/analytics";
 
 import CustomerInfo from "@/components/quote/customer-info";
 import LineItemsEditor, {
@@ -213,10 +214,14 @@ export default function NewQuotePage() {
 
       if (quoteErr) throw quoteErr;
 
+      // Track quote creation
+      trackQuoteCreated(quote.id, itemsJson.length, total);
+
       // Navigate based on action
       if (asDraft) {
         router.push("/dashboard");
       } else {
+        trackQuoteSent(quote.id);
         // Send email via API route
         try {
           await fetch("/api/send-quote", {

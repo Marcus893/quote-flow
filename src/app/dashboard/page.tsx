@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SignOutButton from "./sign-out-button";
 import { TIER_DISPLAY, TIER_LIMITS, type SubscriptionTier } from "@/lib/subscription";
+import IdentifyUser from "@/components/identify-user";
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   draft: { label: "Draft", color: "bg-gray-100 text-gray-600", icon: <Clock className="w-3.5 h-3.5" /> },
@@ -119,6 +120,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <IdentifyUser
+        userId={user.id}
+        email={profile.email}
+        businessName={profile.business_name}
+        tier={tier}
+      />
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">

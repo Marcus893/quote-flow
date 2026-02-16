@@ -5,6 +5,7 @@ import { Building2, Upload, ArrowRight, Camera, DollarSign, CreditCard, CheckCir
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useRef, useEffect, Suspense } from "react";
 import Image from "next/image";
+import { trackOnboardingComplete, identifyUser } from "@/lib/analytics";
 
 function OnboardingForm() {
   const router = useRouter();
@@ -191,6 +192,8 @@ function OnboardingForm() {
       return;
     }
 
+    identifyUser(user.id, { email: email.trim(), business_name: businessName.trim() });
+    trackOnboardingComplete(businessName.trim());
     router.push("/dashboard");
   };
 
