@@ -33,6 +33,13 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // If root page received an auth code, forward to /auth/callback
+  if (request.nextUrl.pathname === "/" && request.nextUrl.searchParams.has("code")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/callback";
+    return NextResponse.redirect(url);
+  }
+
   // If not logged in and not on a public route, redirect to login
   const isPublicRoute =
     request.nextUrl.pathname === "/" ||
@@ -40,6 +47,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname === "/subscription" ||
     request.nextUrl.pathname === "/privacy" ||
     request.nextUrl.pathname === "/terms" ||
+    request.nextUrl.pathname === "/icon" ||
+    request.nextUrl.pathname === "/apple-icon" ||
     request.nextUrl.pathname.startsWith("/quote/") ||
     request.nextUrl.pathname.startsWith("/api/") ||
     request.nextUrl.pathname === "/auth/callback";

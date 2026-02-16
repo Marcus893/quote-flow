@@ -12,11 +12,7 @@ export const metadata: Metadata = {
   description:
     "Photo-to-professional-quote PWA for contractors. Create, send, and track quotes from your phone.",
   icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "32x32" },
-      { url: "/icon", type: "image/png" },
-    ],
-    shortcut: "/favicon.ico",
+    icon: { url: "/icon", type: "image/png" },
     apple: "/apple-icon",
   },
 };
