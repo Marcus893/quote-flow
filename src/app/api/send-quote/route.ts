@@ -113,7 +113,7 @@ export async function POST(request: Request) {
     `;
 
     const { error: emailError } = await resend.emails.send({
-      from: `${contractor?.business_name || "QuoteFlow"} <onboarding@resend.dev>`,
+      from: `${contractor?.business_name || "QuoteFlow"} <noreply@usequoteflow.com>`,
       to: customer.email,
       subject: `Quote${quote.quote_name ? `: ${quote.quote_name}` : ""} from ${contractor?.business_name || "QuoteFlow"} — $${Number(quote.total_price).toFixed(2)}`,
       html: emailHtml,

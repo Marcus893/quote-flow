@@ -185,7 +185,7 @@ export async function GET(request: Request) {
 
           try {
             await resend.emails.send({
-              from: `${businessName} <onboarding@resend.dev>`,
+              from: `${businessName} <noreply@usequoteflow.com>`,
               to: customer.email,
               subject,
               html: bodyHtml,

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { PostHogProvider } from "@/components/posthog-provider";
@@ -15,6 +15,22 @@ export const metadata: Metadata = {
     icon: { url: "/icon", type: "image/png" },
     apple: "/apple-icon",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "QuoteFlow",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#2563eb",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({

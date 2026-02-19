@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     `;
 
     await resend.emails.send({
-      from: `QuoteFlow <onboarding@resend.dev>`,
+      from: `QuoteFlow <noreply@usequoteflow.com>`,
       to: contractor.email,
       subject: `💥 ${customerName} just opened "${quoteName}"`,
       html: emailHtml,
