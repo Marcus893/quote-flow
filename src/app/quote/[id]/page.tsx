@@ -114,7 +114,7 @@ export default async function PublicQuotePage({ params, searchParams }: QuotePag
           <div className="bg-gray-900 text-white px-6 py-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                {contractor?.logo_url ? (
+                {contractor?.logo_url && isPaidTier(contractorTier) ? (
                   <Image
                     src={contractor.logo_url}
                     alt="Logo"
@@ -359,7 +359,7 @@ export default async function PublicQuotePage({ params, searchParams }: QuotePag
               businessName={contractor?.business_name || ""}
               businessEmail={contractor?.email}
               businessPhone={contractor?.phone}
-              logoUrl={contractor?.logo_url}
+              logoUrl={isPaidTier(contractorTier) ? contractor?.logo_url : null}
               customerName={customer?.name || "Customer"}
               customerEmail={customer?.email}
               customerPhone={customer?.phone}

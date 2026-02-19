@@ -96,19 +96,19 @@ export default function ConfirmPayments({
     try {
       const supabase = createClient();
 
-      // Delete the invalid payment
-      const { error: deleteError } = await supabase
+      // Mark the payment as invalid (keep the record for history)
+      const { error: updateError } = await supabase
         .from("payments")
-        .delete()
+        .update({ status: "invalid" })
         .eq("id", paymentId);
 
-      if (deleteError) throw deleteError;
+      if (updateError) throw updateError;
 
       const payment = payments.find((p) => p.id === paymentId);
 
-      // Update local state — remove the invalid payment
-      setPayments((prev) => prev.filter((p) => p.id !== paymentId));
-      setSuccessMessage(`Payment of $${Number(payment?.amount || 0).toFixed(2)} marked as invalid and removed.`);
+      // Update local state — mark as invalid
+      setPayments((prev) => prev.map((p) => p.id === paymentId ? { ...p, status: "invalid" } : p));
+      setSuccessMessage(`Payment of $${Number(payment?.amount || 0).toFixed(2)} marked as invalid.`);
       router.refresh();
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: unknown) {

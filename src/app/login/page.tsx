@@ -79,7 +79,10 @@ export default function LoginPage() {
         </button>
 
         <p className="mt-6 text-center text-sm text-gray-400">
-          By continuing, you agree to our Terms of Service
+          By continuing, you agree to our{" "}
+          <a href="/terms" className="underline hover:text-gray-300">
+            Terms of Service
+          </a>
         </p>
       </div>
 

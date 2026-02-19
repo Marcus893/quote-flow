@@ -175,7 +175,7 @@ create table public.payments (
   method text not null,
   notes text,
   receipt_url text,
-  status text default 'pending' check (status in ('pending', 'confirmed')),
+  status text default 'pending' check (status in ('pending', 'confirmed', 'invalid')),
   created_at timestamptz default now()
 );
 
@@ -271,9 +271,16 @@ create policy "Payment receipts are publicly readable"
 -- MIGRATION: Add status column to payments
 -- Run this if payments table already exists:
 -- ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS status text DEFAULT 'pending';
--- ALTER TABLE public.payments ADD CONSTRAINT payments_status_check CHECK (status IN ('pending', 'confirmed'));
+-- ALTER TABLE public.payments ADD CONSTRAINT payments_status_check CHECK (status IN ('pending', 'confirmed', 'invalid'));
 -- UPDATE public.payments SET status = 'confirmed' WHERE status IS NULL;
 -- CREATE POLICY "Anyone can update payments" ON public.payments FOR UPDATE USING (true) WITH CHECK (true);
+-- ============================================
+
+-- ============================================
+-- MIGRATION: Allow 'invalid' status on payments
+-- Run this if payments table already has status column with only pending/confirmed:
+-- ALTER TABLE public.payments DROP CONSTRAINT IF EXISTS payments_status_check;
+-- ALTER TABLE public.payments ADD CONSTRAINT payments_status_check CHECK (status IN ('pending', 'confirmed', 'invalid'));
 -- ============================================
 
 -- ============================================

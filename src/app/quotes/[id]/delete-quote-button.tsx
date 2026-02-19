@@ -21,6 +21,49 @@ export default function DeleteQuoteButton({ quoteId, quoteName }: DeleteQuoteBut
     try {
       const supabase = createClient();
 
+      // Get the quote to find the contractor ID and photos
+      const { data: quote } = await supabase
+        .from("quotes")
+        .select("contractor_id, items, photos")
+        .eq("id", quoteId)
+        .single();
+
+      // Delete receipt files from payment-receipts bucket
+      const { data: receiptFiles } = await supabase.storage
+        .from("payment-receipts")
+        .list(quoteId);
+      if (receiptFiles && receiptFiles.length > 0) {
+        await supabase.storage
+          .from("payment-receipts")
+          .remove(receiptFiles.map((f) => `${quoteId}/${f.name}`));
+      }
+
+      // Delete quote photo files from quote-photos bucket
+      if (quote) {
+        const photoUrls: string[] = [];
+        // Collect item-level photos
+        const items = (quote.items as { photos?: string[] }[]) || [];
+        for (const item of items) {
+          if (item.photos) photoUrls.push(...item.photos);
+        }
+        // Collect top-level photos
+        const topPhotos = (quote.photos as string[]) || [];
+        photoUrls.push(...topPhotos);
+
+        if (photoUrls.length > 0) {
+          // Extract storage paths from public URLs
+          const pathsToDelete = photoUrls
+            .map((url) => {
+              const match = url.match(/quote-photos\/(.+)/);
+              return match ? match[1] : null;
+            })
+            .filter((p): p is string => p !== null);
+          if (pathsToDelete.length > 0) {
+            await supabase.storage.from("quote-photos").remove(pathsToDelete);
+          }
+        }
+      }
+
       // Delete payments first (cascade should handle this, but be explicit)
       await supabase.from("payments").delete().eq("quote_id", quoteId);
 

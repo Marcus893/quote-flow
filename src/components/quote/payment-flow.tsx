@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { DollarSign, CreditCard, ExternalLink, CheckCircle, Banknote, ArrowRight, Clock, Upload, FileText } from "lucide-react";
+import { DollarSign, CreditCard, ExternalLink, CheckCircle, Banknote, ArrowRight, Clock, Upload, FileText, XCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -104,6 +104,11 @@ export default function PaymentFlow({
     }
     if (!selectedMethod) {
       setError("Please select a payment method.");
+      return;
+    }
+    // Receipt is mandatory for non-credit-card payments
+    if (selectedMethod !== "credit_card" && !receiptFile) {
+      setError("Please upload a receipt or proof of payment.");
       return;
     }
 
@@ -518,7 +523,7 @@ export default function PaymentFlow({
             {/* Receipt Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Receipt (optional)
+                Upload Receipt <span className="text-red-500">*</span>
               </label>
               {receiptFile ? (
                 <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
@@ -570,7 +575,7 @@ export default function PaymentFlow({
               </button>
               <button
                 onClick={handleSubmitPayment}
-                disabled={confirmingPayment || !selectedMethod || !paymentAmount || parseFloat(paymentAmount) <= 0}
+                disabled={confirmingPayment || !selectedMethod || !paymentAmount || parseFloat(paymentAmount) <= 0 || (selectedMethod !== "credit_card" && !receiptFile)}
                 className="flex-[2] flex items-center justify-center gap-2 py-3.5 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg shadow-green-600/20"
               >
                 <CheckCircle className="w-5 h-5" />
@@ -606,6 +611,11 @@ function PaymentHistory({ payments }: { payments: Payment[] }) {
                     <Clock className="w-3 h-3" />
                     Pending
                   </span>
+                ) : payment.status === "invalid" ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                    <XCircle className="w-3 h-3" />
+                    Invalid
+                  </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
                     <CheckCircle className="w-3 h-3" />
@@ -637,7 +647,7 @@ function PaymentHistory({ payments }: { payments: Payment[] }) {
                 </a>
               )}
             </div>
-            <span className={`font-semibold ${payment.status === "confirmed" ? "text-green-600" : "text-yellow-600"}`}>
+            <span className={`font-semibold ${payment.status === "confirmed" ? "text-green-600" : payment.status === "invalid" ? "text-red-500 line-through" : "text-yellow-600"}`}>
               +${Number(payment.amount).toFixed(2)}
             </span>
           </div>

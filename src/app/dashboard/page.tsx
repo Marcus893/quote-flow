@@ -1,10 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { FileText, Plus, Clock, Eye, CheckCircle, DollarSign, Send, Settings, AlertCircle, History, Crown, Sparkles } from "lucide-react";
+import { FileText, Plus, Clock, Eye, CheckCircle, DollarSign, Send, Settings, AlertCircle, History, Crown, Sparkles, Mail } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import SignOutButton from "./sign-out-button";
-import { TIER_DISPLAY, TIER_LIMITS, type SubscriptionTier } from "@/lib/subscription";
+import { TIER_DISPLAY, TIER_LIMITS, isPaidTier, type SubscriptionTier } from "@/lib/subscription";
 import IdentifyUser from "@/components/identify-user";
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
@@ -130,7 +130,7 @@ export default async function DashboardPage() {
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {profile.logo_url ? (
+            {profile.logo_url && isPaidTier(tier) ? (
               <Image
                 src={profile.logo_url}
                 alt="Logo"
@@ -159,6 +159,13 @@ export default async function DashboardPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <a
+              href="mailto:marcus@usequoteflow.com"
+              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Contact Support"
+            >
+              <Mail className="w-5 h-5" />
+            </a>
             <Link
               href="/settings"
               className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"

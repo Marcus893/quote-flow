@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
+    const stripe = getStripe();
 
     // ---- Handle subscription/lifetime purchase ----
     const subTier = session.metadata?.tier;
@@ -50,11 +51,54 @@ export async function POST(request: NextRequest) {
 
         if (subTier === "pro" && session.subscription) {
           updateData.stripe_subscription_id = session.subscription;
-          // Pro subscription doesn't expire (managed by Stripe recurring billing)
-          updateData.subscription_expires_at = null;
+          // Fetch subscription with items to get current period end
+          try {
+            const subscription = await stripe.subscriptions.retrieve(session.subscription as string, { expand: ["items"] });
+            const periodEnd = subscription.items?.data?.[0]?.current_period_end;
+            updateData.subscription_expires_at = periodEnd
+              ? new Date(periodEnd * 1000).toISOString()
+              : null;
+          } catch {
+            updateData.subscription_expires_at = null;
+          }
         } else if (subTier === "lifetime") {
           updateData.stripe_subscription_id = null;
           updateData.subscription_expires_at = null; // Never expires
+
+          // Cancel all active Pro subscriptions for this customer
+          const customerId = session.customer as string | null;
+          
+          // Also try getting customer ID from profile as fallback
+          let effectiveCustomerId = customerId;
+          if (!effectiveCustomerId) {
+            const { data: existingProfile } = await supabase
+              .from("profiles")
+              .select("stripe_customer_id")
+              .eq("id", subUserId)
+              .single();
+            if (existingProfile?.stripe_customer_id) {
+              effectiveCustomerId = existingProfile.stripe_customer_id;
+            }
+          }
+
+          if (effectiveCustomerId) {
+            try {
+              const subscriptions = await stripe.subscriptions.list({
+                customer: effectiveCustomerId,
+                status: "active",
+                limit: 100,
+              });
+              console.log(`Found ${subscriptions.data.length} active subscriptions for customer ${effectiveCustomerId} during Lifetime upgrade`);
+              for (const sub of subscriptions.data) {
+                await stripe.subscriptions.cancel(sub.id);
+                console.log(`Cancelled subscription ${sub.id} after Lifetime upgrade`);
+              }
+            } catch (cancelErr) {
+              console.error("Failed to cancel Pro subscriptions after Lifetime upgrade:", cancelErr);
+            }
+          } else {
+            console.warn("No Stripe customer ID found for Lifetime upgrade — cannot cancel existing subscriptions");
+          }
         }
 
         if (!updateData.stripe_customer_id && session.customer) {
@@ -165,21 +209,26 @@ export async function POST(request: NextRequest) {
         const supabase = getServiceClient();
 
         if (subscription.status === "active") {
+          const periodEnd = subscription.items?.data?.[0]?.current_period_end;
           await supabase
             .from("profiles")
             .update({
               subscription_tier: "pro",
-              subscription_expires_at: null,
+              subscription_expires_at: periodEnd
+                ? new Date(periodEnd * 1000).toISOString()
+                : null,
               updated_at: new Date().toISOString(),
             })
             .eq("id", userId);
         } else if (subscription.status === "past_due" || subscription.status === "unpaid") {
           // Grace period — keep pro but mark expiration
-          const periodEnd = new Date((subscription as unknown as Record<string, unknown>).current_period_end as number * 1000);
+          const periodEnd = subscription.items?.data?.[0]?.current_period_end;
           await supabase
             .from("profiles")
             .update({
-              subscription_expires_at: periodEnd.toISOString(),
+              subscription_expires_at: periodEnd
+                ? new Date(periodEnd * 1000).toISOString()
+                : null,
               updated_at: new Date().toISOString(),
             })
             .eq("id", userId);

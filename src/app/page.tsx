@@ -705,6 +705,21 @@ export default async function HomePage() {
                   </li>
                 </ul>
               </div>
+              <div>
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                  Support
+                </h4>
+                <ul className="space-y-2">
+                  <li>
+                    <a
+                      href="mailto:marcus@usequoteflow.com"
+                      className="text-sm text-gray-400 hover:text-white transition-colors"
+                    >
+                      Contact Us
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-500">

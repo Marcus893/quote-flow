@@ -1,22 +1,18 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { Building2, Upload, ArrowRight, Camera, DollarSign, CreditCard, CheckCircle, Loader2 } from "lucide-react";
+import { Building2, ArrowRight, DollarSign, CreditCard, CheckCircle, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useRef, useEffect, Suspense } from "react";
-import Image from "next/image";
+import { useState, useEffect, Suspense } from "react";
 import { trackOnboardingComplete, identifyUser } from "@/lib/analytics";
 
 function OnboardingForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [businessName, setBusinessName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -99,15 +95,6 @@ function OnboardingForm() {
     }
   }, [searchParams]);
 
-  const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setLogoFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setLogoPreview(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleSubmit = async () => {
     if (!businessName.trim()) {
@@ -139,28 +126,7 @@ function OnboardingForm() {
       return;
     }
 
-    let logoUrl: string | null = null;
 
-    // Upload logo if selected
-    if (logoFile) {
-      const fileExt = logoFile.name.split(".").pop();
-      const filePath = `${user.id}/logo.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("logos")
-        .upload(filePath, logoFile, { upsert: true });
-
-      if (uploadError) {
-        setError("Failed to upload logo: " + uploadError.message);
-        setLoading(false);
-        return;
-      }
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("logos").getPublicUrl(filePath);
-      logoUrl = publicUrl;
-    }
 
     // Build payment links object
     const paymentLinks: Record<string, string> = {};
@@ -180,7 +146,6 @@ function OnboardingForm() {
         business_name: businessName.trim(),
         phone: phone.trim() || null,
         email: email.trim(),
-        logo_url: logoUrl,
         payment_links: paymentLinks,
         updated_at: new Date().toISOString(),
       })
@@ -237,43 +202,7 @@ function OnboardingForm() {
             </div>
           )}
 
-          {/* Logo Upload */}
-          <div className="flex flex-col items-center">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="relative w-24 h-24 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-blue-400 hover:bg-blue-50 transition-all overflow-hidden"
-            >
-              {logoPreview ? (
-                <Image
-                  src={logoPreview}
-                  alt="Logo preview"
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex flex-col items-center gap-1">
-                  <Camera className="w-6 h-6 text-gray-400" />
-                  <span className="text-xs text-gray-400">Logo</span>
-                </div>
-              )}
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleLogoSelect}
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="mt-2 text-sm text-blue-600 font-medium flex items-center gap-1"
-            >
-              <Upload className="w-3.5 h-3.5" />
-              Upload Logo
-            </button>
-          </div>
+
 
           {/* Business Name */}
           <div>

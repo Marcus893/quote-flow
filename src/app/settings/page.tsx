@@ -159,6 +159,29 @@ function SettingsForm() {
         }
       }
       setPageLoading(false);
+
+      // Handle subscription success redirect — update DB + UI
+      // (webhook may not have fired yet, especially in local dev)
+      const subSuccess = searchParams.get("subscription_success");
+      if (subSuccess && user) {
+        setTier(subSuccess as SubscriptionTier);
+        setSuccess(`Successfully upgraded to ${subSuccess === "lifetime" ? "Lifetime" : "Pro"}! 🎉`);
+        setTimeout(() => setSuccess(null), 5000);
+
+        // Also update the database so the tier persists
+        const updateData: Record<string, unknown> = {
+          subscription_tier: subSuccess,
+          updated_at: new Date().toISOString(),
+        };
+        if (subSuccess === "lifetime") {
+          updateData.stripe_subscription_id = null;
+          updateData.subscription_expires_at = null;
+        }
+        await supabase
+          .from("profiles")
+          .update(updateData)
+          .eq("id", user.id);
+      }
     };
     loadProfile();
 
@@ -171,14 +194,6 @@ function SettingsForm() {
     }
     if (searchParams.get("stripe_refresh") === "true") {
       setStripeMessage("Stripe onboarding link expired. Please try again.");
-    }
-
-    // Subscription success
-    const subSuccess = searchParams.get("subscription_success");
-    if (subSuccess) {
-      setTier(subSuccess as SubscriptionTier);
-      setSuccess(`Successfully upgraded to ${subSuccess === "lifetime" ? "Lifetime" : "Pro"}! 🎉`);
-      setTimeout(() => setSuccess(null), 5000);
     }
   }, [searchParams, router]);
 

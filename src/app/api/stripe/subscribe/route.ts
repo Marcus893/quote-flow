@@ -67,6 +67,28 @@ export async function POST(request: Request) {
         .eq("id", user.id);
     }
 
+    // Check for existing active subscriptions on Stripe to prevent duplicates
+    const existingSubscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: "active",
+      limit: 10,
+    });
+
+    if (tier === "pro" && existingSubscriptions.data.length > 0) {
+      return NextResponse.json(
+        { error: "You already have an active subscription" },
+        { status: 400 }
+      );
+    }
+
+    // If upgrading to lifetime, cancel all active Pro subscriptions immediately
+    if (tier === "lifetime" && existingSubscriptions.data.length > 0) {
+      for (const sub of existingSubscriptions.data) {
+        await stripe.subscriptions.cancel(sub.id);
+        console.log(`Cancelled subscription ${sub.id} before Lifetime purchase`);
+      }
+    }
+
     // Determine price ID based on tier
     const priceId =
       tier === "pro"
