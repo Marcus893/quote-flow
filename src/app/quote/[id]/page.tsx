@@ -32,6 +32,8 @@ export default async function PublicQuotePage({ params, searchParams }: QuotePag
     notFound();
   }
 
+  const baseUrl = (await import("@/lib/url")).getBaseUrl();
+
   // Mark as viewed if currently "sent" and notify contractor
   if (quote.status === "sent") {
     await supabase
@@ -40,7 +42,6 @@ export default async function PublicQuotePage({ params, searchParams }: QuotePag
       .eq("id", id);
 
     // Send view notification email to contractor (non-blocking)
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     try {
       fetch(`${baseUrl}/api/quote-viewed`, {
         method: "POST",
@@ -254,7 +255,7 @@ export default async function PublicQuotePage({ params, searchParams }: QuotePag
               <p className="text-xs text-gray-400">
                 Sent via{" "}
                 <a
-                  href={process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}
+                  href={baseUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-500 hover:text-blue-600 font-medium"

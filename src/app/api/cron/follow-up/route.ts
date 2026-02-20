@@ -35,7 +35,8 @@ export async function GET(request: Request) {
   }
 
   const supabase = getServiceClient();
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const { getBaseUrl } = await import("@/lib/url");
+  const baseUrl = getBaseUrl();
   let emailsSent = 0;
 
   try {

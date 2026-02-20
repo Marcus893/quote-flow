@@ -24,7 +24,8 @@ export async function POST() {
     }
 
     const stripe = getStripe();
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const { getBaseUrl } = await import("@/lib/url");
+    const baseUrl = getBaseUrl();
 
     const session = await stripe.billingPortal.sessions.create({
       customer: profile.stripe_customer_id,

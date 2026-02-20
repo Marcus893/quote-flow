@@ -13,7 +13,6 @@ export async function GET() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          borderRadius: "100px",
         }}
       >
         <svg

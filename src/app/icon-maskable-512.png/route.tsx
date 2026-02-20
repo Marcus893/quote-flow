@@ -17,8 +17,8 @@ export async function GET() {
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="120"
-          height="120"
+          width="240"
+          height="240"
           viewBox="0 0 24 24"
           fill="none"
           stroke="white"
@@ -31,8 +31,8 @@ export async function GET() {
       </div>
     ),
     {
-      width: 192,
-      height: 192,
+      width: 512,
+      height: 512,
     }
   );
 }

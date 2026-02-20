@@ -73,6 +73,32 @@ export default function CustomerInfo({
     setSearch("");
   };
 
+  const handleDeleteCustomer = async (e: React.MouseEvent, customerId: string) => {
+    e.stopPropagation();
+    const supabase = createClient();
+
+    // Check if customer has any quotes
+    const { count } = await supabase
+      .from("quotes")
+      .select("id", { count: "exact", head: true })
+      .eq("customer_id", customerId);
+
+    if (count && count > 0) {
+      alert("This customer has existing quotes and cannot be deleted.");
+      return;
+    }
+
+    if (!confirm("Delete this customer? This cannot be undone.")) return;
+
+    const { error } = await supabase
+      .from("customers")
+      .delete()
+      .eq("id", customerId);
+    if (!error) {
+      setCustomers((prev) => prev.filter((c) => c.id !== customerId));
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
@@ -113,25 +139,37 @@ export default function CustomerInfo({
               </p>
             ) : (
               filteredCustomers.map((c) => (
-                <button
+                <div
                   key={c.id}
-                  type="button"
-                  onClick={() => handleSelect(c)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-blue-50 active:bg-blue-100 transition-colors text-left"
+                  className="flex items-center gap-1 pr-2"
                 >
-                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center shrink-0">
-                    <User className="w-4 h-4 text-gray-500" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {c.name}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">
-                      {c.email}
-                      {c.phone ? ` • ${c.phone}` : ""}
-                    </p>
-                  </div>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSelect(c)}
+                    className="flex-1 flex items-center gap-3 px-3 py-2.5 hover:bg-blue-50 active:bg-blue-100 transition-colors text-left min-w-0"
+                  >
+                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center shrink-0">
+                      <User className="w-4 h-4 text-gray-500" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {c.name}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {c.email}
+                        {c.phone ? ` • ${c.phone}` : ""}
+                      </p>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeleteCustomer(e, c.id)}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
+                    title="Delete customer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               ))
             )}
           </div>

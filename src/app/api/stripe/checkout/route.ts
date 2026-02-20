@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const { getBaseUrl } = await import("@/lib/url");
+    const baseUrl = getBaseUrl();
     const amountInCents = Math.round(amount * 100);
 
     // Calculate application fee (e.g., 2% platform fee)

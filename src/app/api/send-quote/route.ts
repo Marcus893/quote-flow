@@ -38,7 +38,8 @@ export async function POST(request: Request) {
     }
 
     // Build the public quote URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const { getBaseUrl } = await import("@/lib/url");
+    const baseUrl = getBaseUrl();
     const quoteUrl = `${baseUrl}/quote/${quoteId}`;
 
     // Build line items HTML

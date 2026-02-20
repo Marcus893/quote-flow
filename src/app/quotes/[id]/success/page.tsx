@@ -37,7 +37,7 @@ export default async function QuoteSuccessPage({ params }: SuccessPageProps) {
   if (!quote) redirect("/dashboard");
 
   const customer = quote.customers;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = (await import("@/lib/url")).getBaseUrl();
   const quoteUrl = `${baseUrl}/quote/${id}`;
   const smsBody = encodeURIComponent(
     `Hi ${customer?.name || "there"}, here is your professional quote for ${quote.quote_name || "your project"}: ${quoteUrl}`

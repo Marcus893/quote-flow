@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const { getBaseUrl } = await import("@/lib/url");
+    const baseUrl = getBaseUrl();
     let accountId = profile?.stripe_account_id;
 
     // Create Stripe Express account if none exists

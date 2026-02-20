@@ -42,7 +42,8 @@ export async function POST(request: Request) {
     const customerName = customer?.name || "Your customer";
     const customerEmail = customer?.email || "";
     const quoteName = quote.quote_name || "your quote";
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const { getBaseUrl } = await import("@/lib/url");
+    const baseUrl = getBaseUrl();
     const quoteUrl = `${baseUrl}/quotes/${quoteId}`;
     const publicQuoteUrl = `${baseUrl}/quote/${quoteId}`;
 

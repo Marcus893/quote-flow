@@ -104,7 +104,7 @@ export default async function QuoteDetailPage({ params }: QuoteDetailProps) {
   const depositPercentage = Number(quote.deposit_percentage) || 0;
   const depositAmount = (depositPercentage / 100) * Number(quote.total_price);
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = (await import("@/lib/url")).getBaseUrl();
   const quoteUrl = `${baseUrl}/quote/${id}`;
   const smsBody = encodeURIComponent(
     `Hi ${customer?.name || "there"}, here is your professional quote for ${quote.quote_name || "your project"}: ${quoteUrl}`
